@@ -41,6 +41,7 @@ public class CompanionSelectionScreen extends Screen {
     private PetEntity previewEntity;
     private String selectedVariantId;
     private String selectedDisplayName;
+    private boolean selectedIsUnlocked = true;
     private final ItemStack scrollIconStack = new ItemStack(ModItemsVC.COMPANION_SCROLL);
 
     public CompanionSelectionScreen(Set<String> unlockedVariantIds, String currentVariantType) {
@@ -88,7 +89,7 @@ public class CompanionSelectionScreen extends Screen {
         String confirmText = scrollCount > 0 ? "Confirm (x" + scrollCount + ")" : "Confirm";
         confirmButton = new Button(previewCenterX - 60, this.height - 30, 120, 20,
                 new TextComponent(confirmText).withStyle(ChatFormatting.GREEN), b -> onConfirm());
-        confirmButton.active = scrollCount > 0;
+        confirmButton.active = scrollCount > 0 && selectedIsUnlocked;
         addRenderableWidget(confirmButton);
 
         createPreviewEntity();
@@ -153,7 +154,9 @@ public class CompanionSelectionScreen extends Screen {
     public void onPetSelected(CompanionListWidget.PetEntry entry) {
         this.selectedVariantId = entry.getVariantId();
         this.selectedDisplayName = entry.getDisplayName();
+        this.selectedIsUnlocked = entry.isUnlocked();
         updatePreview(selectedVariantId);
+        confirmButton.active = selectedIsUnlocked && countScrollsInInventory() > 0;
     }
 
     public void onFavoriteToggled() {
@@ -165,6 +168,7 @@ public class CompanionSelectionScreen extends Screen {
     private void onConfirm() {
         if (countScrollsInInventory() <= 0) return;
         if (selectedVariantId == null) return;
+        if (!selectedIsUnlocked) return;
         if (selectedVariantId.equalsIgnoreCase(currentVariantType)) {
             if (this.minecraft != null && this.minecraft.player != null) {
                 this.minecraft.player.displayClientMessage(
@@ -203,7 +207,7 @@ public class CompanionSelectionScreen extends Screen {
         confirmButton.setMessage(new TextComponent(
                 scrollCount > 0 ? "Confirm (x" + scrollCount + ")" : "Confirm"
         ).withStyle(ChatFormatting.GREEN));
-        confirmButton.active = scrollCount > 0;
+        confirmButton.active = scrollCount > 0 && selectedIsUnlocked;
     }
 
     @Override
@@ -286,6 +290,22 @@ public class CompanionSelectionScreen extends Screen {
             return true;
         }
         return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        if (petList.mouseDragged(mouseX, mouseY, button, dragX, dragY)) {
+            return true;
+        }
+        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (petList.mouseReleased(mouseX, mouseY, button)) {
+            return true;
+        }
+        return super.mouseReleased(mouseX, mouseY, button);
     }
 
     @Override

@@ -6,6 +6,7 @@ import iskallia.vault.entity.entity.pet.PetHelper;
 import iskallia.vault.item.CompanionItem;
 import iskallia.vault.item.CompanionPetManager;
 import iskallia.vault.item.CompanionSeries;
+import iskallia.vault.util.IskalliaDevs;
 import iskallia.vault.world.data.CompanionVariantUnlockData;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.FriendlyByteBuf;
@@ -47,7 +48,10 @@ public class SwapCompanionPacket {
 
             PetHelper.PetVariant variant = variantOpt.get();
 
-            if (variant.requiresUnlock() || variant.requiresRewards()) {
+            boolean isDev = IskalliaDevs.isDeveloper(player.getUUID());
+            boolean needsUnlockCheck = variant.requiresUnlock() || (variant.requiresRewards() && !isDev);
+
+            if (needsUnlockCheck) {
                 Set<String> unlocked = CompanionVariantUnlockData.get(player.getLevel()).getUnlocked(player.getUUID());
                 if (!unlocked.contains(variant.type())) {
                     player.sendMessage(new TextComponent("You haven't unlocked this variant.").withStyle(ChatFormatting.RED), player.getUUID());

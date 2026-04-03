@@ -78,6 +78,10 @@ public class CompanionListWidget extends ObjectSelectionList<CompanionListWidget
             return variantId;
         }
 
+        public boolean isUnlocked() {
+            return isUnlocked;
+        }
+
         public String getDisplayName() {
             return displayName;
         }
@@ -133,8 +137,6 @@ public class CompanionListWidget extends ObjectSelectionList<CompanionListWidget
                 parentScreen.onFavoriteToggled();
                 return true;
             }
-
-            if (!isUnlocked) return false;
 
             CompanionListWidget.this.setSelected(this);
             parentScreen.onPetSelected(this);
